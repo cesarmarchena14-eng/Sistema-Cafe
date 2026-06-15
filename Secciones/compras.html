@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisteam Café - Compras</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html">🏢 Proveedores</a>
+        <a href="compras.html" class="active">☕ Compras Semanales</a>
+        <a href="clientes.html">🏪 Clientes</a>
+        <a href="ventas.html">💰 Ventas Diarias</a>
+        <a href="reportes.html">📊 Reporte Financiero</a>
+    </div>
+
+    <div class="container">
+        <h1>☕ Control de Inventario</h1>
+        <h2>Entrada de Café al Almacén</h2>
+        <form id="formCompra">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Fecha de la Compra:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Proveedor Origen:</label>
+                    <select id="proveedor_rif" required>
+                        <option value="">Cargando proveedores activos...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Variedad de Café:</label>
+                    <select id="tipo_cafe" required>
+                        <option value="suave">Suave</option>
+                        <option value="normal">Normal</option>
+                        <option value="fuerte">Fuerte</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad (Kilos):</label>
+                    <input type="number" id="kilos" step="0.01" placeholder="Ej. 100.00" required>
+                </div>
+                <div class="form-group full-width">
+                    <label>Costo Adquisición por Kilo (USD):</label>
+                    <input type="number" id="precio_pagado_usd" step="0.01" placeholder="Ej. 4.50" required>
+                </div>
+            </div>
+            <button type="submit">Registrar Entrada de Mercancía</button>
+        </form>
+    </div>
+
+    <script>
+        async function cargarProveedores() {
+            try {
+                const res = await fetch('/api/proveedores');
+                const proveedores = await res.json();
+                const select = document.getElementById('proveedor_rif');
+                
+                select.innerHTML = '<option value="">-- Seleccione un Proveedor --</option>';
+                
+                if (proveedores.length === 0) {
+                    select.innerHTML = '<option value="">No hay proveedores activos registrados</option>';
+                    return;
+                }
+
+                proveedores.forEach(p => {
+                    select.innerHTML += `<option value="${p.rif}">${p.nombre_negocio} (${p.rif})</option>`;
+                });
+            } catch (error) {
+                console.error("Error al cargar proveedores:", error);
+            }
+        }
+
+        document.getElementById('formCompra').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const datos = {
+                fecha: document.getElementById('fecha').value,
+                proveedor_rif: document.getElementById('proveedor_rif').value,
+                tipo_cafe: document.getElementById('tipo_cafe').value,
+                kilos: parseFloat(document.getElementById('kilos').value),
+                precio_pagado_usd: parseFloat(document.getElementById('precio_pagado_usd').value)
+            };
+
+            try {
+                const res = await fetch('/api/compras-semanales', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await res.json();
+                if (res.status === 201) {
+                    alert("🎉 Lote de inventario ingresado correctamente.");
+                    document.getElementById('formCompra').reset();
+                } else {
+                    alert("❌ Error: " + resultado.error);
+                }
+            } catch (error) {
+                alert("❌ Falló la comunicación con el servidor");
+            }
+        });
+
+        window.onload = cargarProveedores;
+    </script>
+</body>
+</html>

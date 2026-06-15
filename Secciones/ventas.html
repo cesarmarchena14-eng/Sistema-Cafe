@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisteam Café - Ventas Diarias</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html">🏢 Proveedores</a>
+        <a href="compras.html">☕ Compras Semanales</a>
+        <a href="clientes.html">🏪 Clientes</a>
+        <a href="ventas.html" class="active">💰 Ventas Diarias</a>
+        <a href="reportes.html">📊 Reporte Financiero</a>
+    </div>
+
+    <div class="container">
+        <h1>☕ Sisteam Café</h1>
+        <h2>Módulo de Ventas Diarias (Financiamiento en Bolívares)</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+            * Según las directrices académicas, las ventas se realizan en <strong>Bolívares (VES)</strong> a los acreedores con financiamiento de hasta una semana.
+        </p>
+        
+        <form id="formVenta">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Fecha de la Venta:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Seleccionar Cliente (Acreedor):</label>
+                    <select id="cliente_rif" required>
+                        <option value="">Cargando clientes activos...</option>
+                    </select>
+                </div>
+
+                <!-- Café Suave -->
+                <div class="form-group">
+                    <label>Cantidad Café Suave (Kg):</label>
+                    <input type="number" id="kg_suave" value="0" min="0" step="0.01" oninput="calcularTotalesVenta()">
+                </div>
+                <div class="form-group">
+                    <label>Precio Kg Suave (Bs):</label>
+                    <input type="number" id="p_suave" value="0" min="0" step="0.01" oninput="calcularTotalesVenta()">
+                </div>
+
+                <!-- Café Normal -->
+                <div class="form-group">
+                    <label>Cantidad Café Normal (Kg):</label>
+                    <input type="number" id="kg_normal" value="0" min="0" step="0.01" oninput="calcularTotalesVenta()">
+                </div>
+                <div class="form-group">
+                    <label>Precio Kg Normal (Bs):</label>
+                    <input type="number" id="p_normal" value="0" min="0" step="0.01" oninput="calcularTotalesVenta()">
+                </div>
+
+                <!-- Café Fuerte -->
+                <div class="form-group">
+                    <label>Cantidad Café Fuerte (Kg):</label>
+                    <input type="number" id="kg_fuerte" value="0" min="0" step="0.01" oninput="calcularTotalesVenta()">
+                </div>
+                <div class="form-group">
+                    <label>Precio Kg Fuerte (Bs):</label>
+                    <input type="number" id="p_fuerte" value="0" min="0" step="0.01" oninput="calcularTotalesVenta()">
+                </div>
+            </div>
+
+            <!-- Pizarra de Totales en Pantalla exigida por el DOM -->
+            <div style="background: #fdfaf6; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 5px solid #8b5a2b;">
+                <h4>🧮 Totales de la Nota de Crédito:</h4>
+                <p>Subtotal Suave: <span id="txt_s">0.00</span> Bs.</p>
+                <p>Subtotal Normal: <span id="txt_n">0.00</span> Bs.</p>
+                <p>Subtotal Fuerte: <span id="txt_f">0.00</span> Bs.</p>
+                <hr style="border-style: dashed; color: #dcdca4;">
+                <h3 style="margin: 5px 0;">Monto General a Cobrar: <span id="txt_total" style="color:#b55a2b;">0.00</span> Bs.</h3>
+                <p style="font-size: 11px; color: #888; margin: 0;">* Esta venta generará automáticamente una cuenta por cobrar con vencimiento a 7 días[cite: 1].</p>
+            </div>
+
+            <button type="submit" style="background: #2e7d32;">Registrar Venta (Generar Crédito)</button>
+        </form>
+    </div>
+
+    <script>
+    function cargarClientesSelect() {
+        const clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        const activos = clientes.filter(c => c.activo !== false);
+        const select = document.getElementById('cliente_rif');
+        
+        select.innerHTML = '<option value="">-- Seleccione un Cliente --</option>';
+        activos.forEach(c => {
+            select.innerHTML += `<option value="${c.rif}">${c.nombre_negocio} (${c.rif})</option>`;
+        });
+    }
+
+    function calcularTotalesVenta() {
+        const kSuave = parseFloat(document.getElementById('kg_suave').value) || 0;
+        const pSuave = parseFloat(document.getElementById('p_suave').value) || 0;
+        const kNormal = parseFloat(document.getElementById('kg_normal').value) || 0;
+        const pNormal = parseFloat(document.getElementById('p_normal').value) || 0;
+        const kFuerte = parseFloat(document.getElementById('kg_fuerte').value) || 0;
+        const pFuerte = parseFloat(document.getElementById('p_fuerte').value) || 0;
+
+        const totS = kSuave * pSuave;
+        const totN = kNormal * pNormal;
+        const totF = kFuerte * pFuerte;
+        const total = totS + totN + totF;
+
+        document.getElementById('txt_s').innerText = totS.toFixed(2);
+        document.getElementById('txt_n').innerText = totN.toFixed(2);
+        document.getElementById('txt_f').innerText = totF.toFixed(2);
+        document.getElementById('txt_total').innerText = total.toFixed(2);
+    }
+
+    document.getElementById('formVenta').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const kSuave = parseFloat(document.getElementById('kg_suave').value) || 0;
+        const kNormal = parseFloat(document.getElementById('kg_normal').value) || 0;
+        const kFuerte = parseFloat(document.getElementById('kg_fuerte').value) || 0;
+
+        if((kSuave + kNormal + kFuerte) <= 0) {
+            alert("⚠️ Debe ingresar al menos 1 Kg para procesar la venta.");
+            return;
+        }
+
+        const clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        const cli = clientes.find(c => c.rif === document.getElementById('cliente_rif').value);
+
+        let transacciones = JSON.parse(localStorage.getItem('transacciones')) || [];
+        
+        const pSuave = parseFloat(document.getElementById('p_suave').value) || 0;
+        const pNormal = parseFloat(document.getElementById('p_normal').value) || 0;
+        const pFuerte = parseFloat(document.getElementById('p_fuerte').value) || 0;
+        const total = (kSuave * pSuave) + (kNormal * pNormal) + (kFuerte * pFuerte);
+
+        transacciones.push({
+            tipo_operacion: 'venta',
+            fecha: document.getElementById('fecha').value,
+            rif: document.getElementById('cliente_rif').value,
+            nombre_negocio: cli ? cli.nombre_negocio : 'Cliente',
+            kg_suave: kSuave,
+            kg_normal: kNormal,
+            kg_fuerte: kFuerte,
+            monto_total: total
+        });
+
+        localStorage.setItem('transacciones', JSON.stringify(transacciones));
+        alert("🎉 Venta registrada localmente.");
+        this.reset();
+        calcularTotalesVenta();
+    });
+
+    window.onload = cargarClientesSelect;
+</script>
+</body>
+</html>

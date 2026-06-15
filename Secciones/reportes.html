@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisteam Café - Reportes Académicos</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html">🏢 Proveedores</a>
+        <a href="compras.html">☕ Compras Semanales</a>
+        <a href="clientes.html">🏪 Clientes</a>
+        <a href="ventas.html">💰 Ventas Diarias</a>
+        <a href="reportes.html" class="active">📊 Reporte Financiero</a>
+    </div>
+
+    <div class="container">
+        <h1>📊 Módulo de Reportes</h1>
+        <h2>Consola Universitaria de Auditoría (Teoría DOM)</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+            * Seleccione un rango de fechas para consultar los estados financieros exigidos en la evaluación.
+        </p>
+        
+        <!-- Filtros de Fecha para la consulta -->
+        <div class="form-grid" style="margin-bottom: 25px;">
+            <div class="form-group">
+                <label>Fecha de Inicio:</label>
+                <input type="date" id="fecha_inicio" required>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Fin:</label>
+                <input type="date" id="fecha_fin" required>
+            </div>
+        </div>
+
+        <!-- Botonera Exigida por la Rúbrica -->
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;">
+            <button onclick="cargarReporte('ganancias')" style="flex: 1; min-width: 180px; background: #6f4e37;">📈 Ganancias Diarias/Semanales</button>
+            <button onclick="cargarReporte('cuentas-cobrar')" style="flex: 1; min-width: 180px; background: #b55a2b;">⏳ Cuentas por Cobrar</button>
+            <button onclick="cargarReporte('kilos')" style="flex: 1; min-width: 180px; background: #4a3b32;">🎚️ Kilos de Café Vendidos (Extra 1)</button>
+            <button onclick="cargarReporte('compras-proveedor')" style="flex: 1; min-width: 180px; background: #2e7d32;">🛒 Compras a Proveedores (Extra 2)</button>
+        </div>
+
+        <h3 id="tituloReporte" style="border-bottom: 2px solid #6f4e37; padding-bottom: 8px; color: #4a3b32;">Seleccione un reporte analítico</h3>
+        
+        <!-- El contenedor donde el DOM inyectará las tablas de datos -->
+        <div id="pizarraReporte" style="margin-top: 20px;">
+            <p style="text-align: center; color: #888;">Complete las fechas y presione un botón para calcular los balances correspondientes.</p>
+        </div>
+    </div>
+
+    <script>
+    function cargarReporte(tipo) {
+        const inicio = document.getElementById('fecha_inicio').value;
+        const fin = document.getElementById('fecha_fin').value;
+
+        if (!inicio || !fin) {
+            alert("⚠️ Por favor introduzca ambas fechas.");
+            return;
+        }
+
+        const transacciones = JSON.parse(localStorage.getItem('transacciones')) || [];
+        // Filtrar transacciones en el rango de fechas elegido
+        const filtradas = transacciones.filter(t => t.fecha >= inicio && t.fecha <= fin);
+        
+        const pizarra = document.getElementById('pizarraReporte');
+        const titulo = document.getElementById('tituloReporte');
+        pizarra.innerHTML = '';
+
+        if (tipo === 'ganancias') {
+            titulo.innerText = "📈 Ganancias Diarias y Semanales";
+            if(filtradas.length === 0) { pizarra.innerHTML = '<p>No hay operaciones.</p>'; return; }
+
+            let html = '<table border="1" style="width:100%; border-collapse:collapse; text-align:left;"><thead><tr style="background:#f2f2f2;"><th style="padding:8px;">Fecha</th><th style="padding:8px;">Negocio</th><th style="padding:8px;">Tipo</th><th style="padding:8px;">Total</th></tr></thead><tbody>';
+            filtradas.forEach(t => {
+                html += `<tr><td style="padding:8px;">${t.fecha}</td><td style="padding:8px;">${t.nombre_negocio}</td><td style="padding:8px; font-weight:bold; color:${t.tipo_operacion==='compra'?'blue':'green'};">${t.tipo_operacion.toUpperCase()}</td><td style="padding:8px;">${t.monto_total.toFixed(2)} ${t.tipo_operacion==='compra'?'USD':'Bs'}</td></tr>`;
+            });
+            pizarra.innerHTML = html + '</tbody></table>';
+        } 
+        
+        else if (tipo === 'cuentas-cobrar') {
+            titulo.innerText = "⏳ Cuentas por Cobrar Semanal (Créditos)";
+            const ventas = filtradas.filter(t => t.tipo_operacion === 'venta');
+            if(ventas.length === 0) { pizarra.innerHTML = '<p>No hay cuentas pendientes.</p>'; return; }
+
+            let total = 0;
+            let html = '<table border="1" style="width:100%; border-collapse:collapse; text-align:left;"><thead><tr style="background:#ffebee;"><th style="padding:8px;">Fecha</th><th style="padding:8px;">Cliente</th><th style="padding:8px;">Monto</th></tr></thead><tbody>';
+            ventas.forEach(v => {
+                total += v.monto_total;
+                html += `<tr><td style="padding:8px;">${v.fecha}</td><td style="padding:8px;">${v.nombre_negocio}</td><td style="padding:8px; color:#c93b2b; font-weight:bold;">${v.monto_total.toFixed(2)} Bs</td></tr>`;
+            });
+            pizarra.innerHTML = html + `<tr style="font-weight:bold; background:#f9f9f9;"><td colspan="2" style="text-align:right; padding:8px;">Total:</td><td style="padding:8px; color:#c93b2b;">${total.toFixed(2)} Bs</td></tr></tbody></table>`;
+        }
+
+        else if (tipo === 'kilos') {
+            titulo.innerText = "🎚️ Kilos de Café Transaccionados";
+            let s = 0, n = 0, f = 0;
+            filtradas.forEach(t => { s += t.kg_suave || 0; n += t.kg_normal || 0; f += t.kg_fuerte || 0; });
+            pizarra.innerHTML = `<div style="display:flex; gap:20px; justify-content:space-around;"><div><h4>Suave</h4><p>${s.toFixed(2)} Kg</p></div><div><h4>Normal</h4><p>${n.toFixed(2)} Kg</p></div><div><h4>Fuerte</h4><p>${f.toFixed(2)} Kg</p></div></div>`;
+        }
+
+        else if (tipo === 'compras-proveedor') {
+            titulo.innerText = "🛒 Historial de Compras a Proveedores";
+            const compras = filtradas.filter(t => t.tipo_operacion === 'compra');
+            if(compras.length === 0) { pizarra.innerHTML = '<p>No hay compras registradas.</p>'; return; }
+
+            let html = '<table border="1" style="width:100%; border-collapse:collapse; text-align:left;"><thead><tr style="background:#e8f5e9;"><th style="padding:8px;">Fecha</th><th style="padding:8px;">Proveedor</th><th style="padding:8px;">Monto</th></tr></thead><tbody>';
+            compras.forEach(c => { html += `<tr><td style="padding:8px;">${c.fecha}</td><td style="padding:8px;">${c.nombre_negocio}</td><td style="padding:8px; color:#2e7d32; font-weight:bold;">${c.monto_total.toFixed(2)} USD</td></tr>`; });
+            pizarra.innerHTML = html + '</tbody></table>';
+        }
+    }
+</script>
+</body>
+</html>

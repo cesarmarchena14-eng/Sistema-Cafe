@@ -1,0 +1,142 @@
+/* Estilos Generales */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #faf8f5; 
+    color: #333; 
+    margin: 20px; 
+}
+
+.container { 
+    max-width: 700px; 
+    background: white; 
+    padding: 25px; 
+    margin: auto; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+    border-top: 5px solid #6f4e37; 
+}
+
+h1, h2 { 
+    color: #4a3128; 
+    text-align: center; 
+}
+
+/* Sistema de Rejilla para Formularios */
+.form-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 15px; 
+    margin-bottom: 20px; 
+}
+
+.form-group { 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.full-width { 
+    grid-column: span 2; 
+}
+
+label { 
+    margin-bottom: 5px; 
+    font-weight: bold; 
+    color: #555; 
+    font-size: 14px; 
+}
+
+input, select { 
+    padding: 10px; 
+    border: 1px solid #dcdca4; 
+    border-radius: 5px; 
+    font-size: 14px; 
+    background: #fff; 
+}
+
+input:focus, select:focus {
+    border-color: #8b5a2b;
+    outline: none;
+}
+
+/* Botones */
+button { 
+    width: 100%; 
+    padding: 12px; 
+    background-color: #6f4e37; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    font-size: 16px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    margin-top: 10px; 
+}
+
+button:hover { 
+    background-color: #5a3d2a; 
+}
+
+/* Barra de Navegación */
+.nav-bar { 
+    background-color: #4a3128; 
+    padding: 15px; 
+    text-align: center; 
+    margin-bottom: 25px; 
+    border-radius: 4px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.nav-bar a { 
+    color: #dcdca4; 
+    margin: 0 15px; 
+    text-decoration: none; 
+    font-weight: bold; 
+}
+
+.nav-bar .active { 
+    color: white; 
+}
+
+/* Contenedor de Listas y Tarjetas */
+.card-list {
+    margin-top: 30px;
+}
+
+.card { 
+    background: #faf8f5; 
+    border-left: 5px solid #6f4e37; 
+    padding: 15px; 
+    margin-bottom: 12px; 
+    border-radius: 4px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card-info {
+    flex-grow: 1;
+}
+
+.card-info h4 {
+    margin: 0 0 5px 0; 
+    color: #4a3128;
+}
+
+.card-info p {
+    margin: 2px 0; 
+    font-size: 13px; 
+    color: #555;
+}
+
+.btn-delete { 
+    width: auto;
+    background-color: #c93b2b; 
+    padding: 6px 12px; 
+    font-size: 12px;
+    margin-top: 0;
+}
+
+.btn-delete:hover { 
+    background-color: #a72e22; 
+}

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisteam Café - Clientes</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="/index.html">🏢 Proveedores</a>
+        <a href="compras.html">☕ Compras Semanales</a>
+        <a href="clientes.html" class="active">🏪 Clientes</a>
+        <a href="ventas.html">💰 Ventas Diarias</a>
+        <a href="reportes.html">📊 Reporte Financiero</a>
+    </div>
+
+    <div class="container">
+        <h1>🏪 Cartera de Clientes</h1>
+        <h2 id="tituloForm">Registro de Nuevos Negocios</h2>
+        <form id="formCliente">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>RIF del Cliente:</label>
+                    <input type="text" id="rif" placeholder="Ej. J-22222222-2" required>
+                </div>
+                <div class="form-group">
+                    <label>Razón Social:</label>
+                    <input type="text" id="nombre_negocio" placeholder="Ej. Automercados Express" required>
+                </div>
+                <div class="form-group full-width">
+                    <label>Dirección Fiscal:</label>
+                    <input type="text" id="direccion" placeholder="Ej. Av. Principal Local 12" required>
+                </div>
+                <div class="form-group">
+                    <label>Persona de Contacto:</label>
+                    <input type="text" id="contacto_nombre" placeholder="Ej. María Gómez" required>
+                </div>
+                <div class="form-group">
+                    <label>Cédula de Identidad:</label>
+                    <input type="text" id="contacto_cedula" placeholder="Ej. V-18234567" required>
+                </div>
+                <div class="form-group">
+                    <label>Número de Teléfono:</label>
+                    <input type="text" id="contacto_telefono" placeholder="Ej. 0424-5555555" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico:</label>
+                    <input type="email" id="contacto_correo" placeholder="Ej. maria@express.com" required>
+                </div>
+            </div>
+            <button type="submit" id="btnGuardar">Registrar Cliente</button>
+            <button type="button" id="btnCancelar" style="background:#888; display:none; margin-top:5px;" onclick="cancelarEdicion()">Cancelar Edición</button>
+        </form>
+
+        <h2 style="margin-top: 40px;">Clientes Registrados</h2>
+        <div id="contenedor-lista" class="card-list"></div>
+    </div>
+
+    <script>
+    function obtenerClientes() {
+        return JSON.parse(localStorage.getItem('clientes')) || [];
+    }
+    function guardarClientes(lista) {
+        localStorage.setItem('clientes', JSON.stringify(lista));
+    }
+
+    function mostrarClientes() {
+        let contenedor = document.getElementById('listaClientes');
+        if (!contenedor) {
+            const main = document.querySelector('.container');
+            contenedor = document.createElement('div');
+            contenedor.id = 'listaClientes';
+            contenedor.style.marginTop = '20px';
+            main.appendChild(contenedor);
+        }
+
+        const clis = obtenerClientes().filter(c => c.activo !== false);
+        contenedor.innerHTML = '';
+
+        if (clis.length === 0) {
+            contenedor.innerHTML = '<p style="text-align:center; color:#888;">No hay clientes registrados.</p>';
+            return;
+        }
+
+        clis.forEach(c => {
+            contenedor.innerHTML += `
+                <div style="background:#fff; padding:15px; border-radius:5px; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; border-left: 4px solid #b55a2b;">
+                    <div>
+                        <strong style="color:#b55a2b; font-size:16px;">${c.nombre_negocio}</strong><br>
+                        <span style="font-size:13px; color:#555;">RIF: ${c.rif} | Contacto: ${c.contacto_nombre}</span>
+                    </div>
+                    <div>
+                        <button onclick="desactivarCliente('${c.rif}')" style="background:#c93b2b; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Desactivar</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function desactivarCliente(rif) {
+        if(confirm("¿Desactivar este cliente?")) {
+            let lista = obtenerClientes();
+            let c = lista.find(cli => cli.rif === rif);
+            if(c) c.activo = false;
+            guardarClientes(lista);
+            mostrarClientes();
+        }
+    }
+
+    document.getElementById('formCliente').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const rif = document.getElementById('rif').value.trim();
+
+        if(!/^([JGVE])-\d{8}-\d$/.test(rif)){
+            alert("⚠️ Formato de RIF inválido.");
+            return;
+        }
+
+        let lista = obtenerClientes();
+        if(lista.some(c => c.rif === rif && c.activo !== false)) {
+            alert("❌ Este RIF ya existe.");
+            return;
+        }
+
+        lista.push({
+            rif,
+            nombre_negocio: document.getElementById('nombre_negocio').value,
+            contacto_nombre: document.getElementById('contacto_nombre').value,
+            contacto_cedula: document.getElementById('contacto_cedula').value,
+            contacto_telefono: document.getElementById('contacto_telefono').value,
+            contacto_correo: document.getElementById('contacto_correo').value,
+            activo: true
+        });
+
+        guardarClientes(lista);
+        alert("🎉 Cliente registrado con éxito.");
+        this.reset();
+        mostrarClientes();
+    });
+
+    window.onload = mostrarClientes;
+</script>
+
+</body>
+</html>

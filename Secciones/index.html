@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisteam Café - Proveedores</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html" class="active">🏢 Proveedores</a>
+        <a href="compras.html">☕ Compras Semanales</a>
+        <a href="clientes.html">🏪 Clientes</a>
+        <a href="ventas.html">💰 Ventas Diarias</a>
+        <a href="reportes.html">📊 Reporte Financiero</a>
+    </div>
+
+    <div class="container">
+        <h1>☕ Sisteam Café</h1>
+        <h2 id="tituloForm">Registrar Nuevo Proveedor</h2>
+        
+        <form id="formProveedor">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>RIF del Negocio:</label>
+                    <input type="text" id="rif" placeholder="Ej. J-12345678-0" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Negocio:</label>
+                    <input type="text" id="nombre_negocio" placeholder="Ej. Distribuidora Granos CO." required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Contacto:</label>
+                    <input type="text" id="contacto_nombre" placeholder="Ej. Carlos Mendoza" required>
+                </div>
+                <div class="form-group">
+                    <label>Cédula del Contacto:</label>
+                    <input type="text" id="contacto_cedula" placeholder="Ej. 15678910" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono de Contacto:</label>
+                    <input type="text" id="contacto_telefono" placeholder="Ej. 0414-1234567" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico:</label>
+                    <input type="email" id="contacto_correo" placeholder="Ej. carlos@granos.com" required>
+                </div>
+            </div>
+            <button type="submit" id="btnGuardar">Registrar Proveedor</button>
+            <button type="button" id="btnCancelar" style="background:#888; display:none; margin-top:5px;" onclick="cancelarEdicion()">Cancelar Edición</button>
+        </form>
+
+        <h2 style="margin-top: 40px;">Lista de Proveedores Activos</h2>
+        <div id="contenedor-lista" class="card-list"></div>
+    </div>
+
+    <script>
+    // Funciones de almacenamiento local
+    function obtenerProveedores() {
+        return JSON.parse(localStorage.getItem('proveedores')) || [];
+    }
+    function guardarProveedores(lista) {
+        localStorage.setItem('proveedores', JSON.stringify(lista));
+    }
+
+    // Dibujar la lista en el DOM
+    function mostrarProveedores() {
+        let contenedor = document.getElementById('listaProveedores');
+        if (!contenedor) {
+            const main = document.querySelector('.container');
+            contenedor = document.createElement('div');
+            contenedor.id = 'listaProveedores';
+            contenedor.style.marginTop = '20px';
+            main.appendChild(contenedor);
+        }
+
+        const provs = obtenerProveedores().filter(p => p.activo !== false);
+        contenedor.innerHTML = '';
+
+        if (provs.length === 0) {
+            contenedor.innerHTML = '<p style="text-align:center; color:#888;">No hay proveedores registrados.</p>';
+            return;
+        }
+
+        provs.forEach(p => {
+            contenedor.innerHTML += `
+                <div style="background:#fff; padding:15px; border-radius:5px; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; border-left: 4px solid #6f4e37;">
+                    <div>
+                        <strong style="color:#6f4e37; font-size:16px;">${p.nombre_negocio}</strong><br>
+                        <span style="font-size:13px; color:#555;">RIF: ${p.rif} | Contacto: ${p.contacto_nombre}</span>
+                    </div>
+                    <div>
+                        <button onclick="desactivarProveedor('${p.rif}')" style="background:#c93b2b; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Desactivar</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function desactivarProveedor(rif) {
+        if(confirm("¿Desactivar este proveedor?")) {
+            let lista = obtenerProveedores();
+            let p = lista.find(prov => prov.rif === rif);
+            if(p) p.activo = false;
+            guardarProveedores(lista);
+            mostrarProveedores();
+        }
+    }
+
+    // Guardar los datos del formulario
+    document.getElementById('formProveedor').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const rif = document.getElementById('rif').value.trim();
+        
+        if(!/^([JGVE])-\d{8}-\d$/.test(rif)){
+            alert("⚠️ Formato de RIF inválido (Ej: J-12345678-0)");
+            return;
+        }
+
+        let lista = obtenerProveedores();
+        if(lista.some(p => p.rif === rif && p.activo !== false)) {
+            alert("❌ Este RIF ya está registrado.");
+            return;
+        }
+
+        lista.push({
+            rif,
+            nombre_negocio: document.getElementById('nombre_negocio').value,
+            contacto_nombre: document.getElementById('contacto_nombre').value,
+            contacto_cedula: document.getElementById('contacto_cedula').value,
+            contacto_telefono: document.getElementById('contacto_telefono').value,
+            contacto_correo: document.getElementById('contacto_correo').value,
+            activo: true
+        });
+
+        guardarProveedores(lista);
+        alert("🎉 Proveedor guardado con éxito.");
+        this.reset();
+        mostrarProveedores();
+    });
+
+    window.onload = mostrarProveedores;
+</script>
+
+</body>
+</html>
