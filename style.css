@@ -140,3 +140,21 @@ button:hover {
 .btn-delete:hover { 
     background-color: #a72e22; 
 }
+/* Estilos para el cambio dinámico entre login y registro */
+.toggle-form {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+.toggle-form a {
+    color: #6f4e37;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+.toggle-form a:hover {
+    text-decoration: underline;
+}
+.hidden {
+    display: none;
+}
